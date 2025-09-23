@@ -1,6 +1,7 @@
 package services
 
 import (
+	"crypto/rand"
 	"errors"
 	"sso/pkg/repository"
 	"time"
@@ -10,7 +11,6 @@ import (
 )
 
 const (
-	salt      = "crwty3146738yegy68td2f76287382893293201328321br63b26886xf7z36z"
 	tokenTTL  = 1000 * time.Hour
 	jwtSecret = "my_super_secret_key"
 )
@@ -30,6 +30,7 @@ type Authorization interface {
 
 // Сервис авторизации
 type AuthService struct {
+	salt string
 	repo repository.Authorization
 }
 
@@ -37,12 +38,13 @@ type AuthService struct {
 func NewAuthService(repo repository.Authorization) *AuthService {
 	return &AuthService{
 		repo: repo,
+		salt: generateSalt(),
 	}
 }
 
 // Создание пользователя с хешированием пароля
 func (s *AuthService) CreateUser(user repository.User) (int, error) {
-	hashedPassword, err := generatePasswordHash(user.Password)
+	hashedPassword, err := s.generatePasswordHash(user.Password)
 	if err != nil {
 		return 0, err
 	}
@@ -58,7 +60,7 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 	}
 
 	// Проверка пароля
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password+salt)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password+s.salt)); err != nil {
 		return "", err
 	}
 
@@ -95,8 +97,17 @@ func (s *AuthService) ParseToken(tokenStr string) (int, error) {
 	return claims.UserId, nil
 }
 
+func generateSalt() string {
+	salt := make([]byte, 32)
+	_, err := rand.Read(salt)
+	if err != nil {
+		panic(err)
+	}
+	return string(salt)
+}
+
 // Хеширование пароля с солью
-func generatePasswordHash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.DefaultCost)
+func (s *AuthService) generatePasswordHash(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password+s.salt), bcrypt.DefaultCost)
 	return string(bytes), err
 }
