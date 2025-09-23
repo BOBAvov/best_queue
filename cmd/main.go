@@ -1,39 +1,22 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"log"
+	"sso/pkg/handler"
+	"sso/pkg/repository"
+	"sso/pkg/services"
 )
 
-type SignRequest struct {
-	Tg_name  string `json:"tg_name" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
 func main() {
-	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "API is running"})
-	})
+	// 1. Инициализация зависимостей (слои)
+	repos := repository.NewAuthMemoryRepo()
+	services := services.NewAuthService(repos)
+	handlers := handler.NewHandler(services)
 
-	r.POST("/sing-up", handleSingUp)
-	r.POST("/sing-in", handlerSingIn)
-	r.Run()
-}
-
-func handleSingUp(c *gin.Context) {
-	var req SignRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
+	// 2. Запуск сервера
+	router := handlers.InitRoutes()
+	log.Println("Starting server on :8080")
+	if err := router.Run(":8080"); err != nil {
+		log.Fatalf("error running server: %s", err.Error())
 	}
-	c.JSON(200, gin.H{"message": "successfully signed up"})
-}
-
-func handlerSingIn(c *gin.Context) {
-	var req SignRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(200, gin.H{"jwt": "hahahahhahaha"})
 }
