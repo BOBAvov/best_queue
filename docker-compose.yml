@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Moscow
+    depends_on:
+      - migrator
+
+  db:
+    image: postgres:16-alpine
+    environment:
+       POSTGRES_DB: queue-db
+       POSTGRES_USER: admin
+       POSTGRES_PASSWORD: admin_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d queue-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  migrator:
+    # Используем официальный образ с инструментом migrate
+    image: migrate/migrate
+    # Подключаем папку с миграциями внутрь контейнера
+    volumes:
+      - ./migrations:/migrations
+    # Команда, которая будет выполнена при запуске контейнера
+    # Важно: здесь хост - это имя сервиса `db`, а не `localhost`
+    command: ["-path", "/migrations", "-database", "postgres://admin:admin_pass@db:5432/queue-db?sslmode=disable", "up"]
+    # Запускаться после db
+    depends_on:
+      db:
+        condition: service_healthy
+    # Не перезапускать этот контейнер, он должен выполниться один раз
+    restart: on-failure
+
+volumes:
+  pgdata:

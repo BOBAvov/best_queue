@@ -123,5 +123,5 @@ func (h *Handler) getProfile(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "user id not found in context"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "this is a protected route", "user_id": userId})
+	c.JSON(http.StatusOK, gin.H{"message": "ok", "user_id": userId})
 }
