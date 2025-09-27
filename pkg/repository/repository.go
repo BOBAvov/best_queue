@@ -1,13 +1,16 @@
 package repository
 
-type Config struct {
-	Host     string
-	User     string
-	Password string
-	DBName   string
-	Port     string
+import (
+	"github.com/jmoiron/sqlx"
+)
+
+type Repository interface {
+	CreateUser(user User) (int, error)
+	GetUserByID(id int) (User, error)
+	GetUserByTgName(tgName string) (User, error)
+	GetIdGroupByName(groupName string) (int, error)
 }
-type Authorization interface {
-	CreateUser(user User) (int32, error)
-	GetUserByID(id int32) (User, error)
+
+func NewRepository(db *sqlx.DB) *PostgresRepository {
+	return &PostgresRepository{db: db}
 }

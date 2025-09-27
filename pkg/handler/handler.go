@@ -23,7 +23,7 @@ func NewHandler(authService services.Authorization) *Handler {
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "API is running"})
@@ -46,6 +46,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 type signUpInput struct {
 	Tg_name  string `json:"tg_name" binding:"required"`
 	Password string `json:"password" binding:"required"`
+	Group    string `json:"group" binding:"required"`
 }
 
 func (h *Handler) signUp(c *gin.Context) {
@@ -56,8 +57,9 @@ func (h *Handler) signUp(c *gin.Context) {
 	}
 
 	id, err := h.service.CreateUser(repository.User{
-		Tg_name:  input.Tg_name,
+		Tg_nick:  input.Tg_name,
 		Password: input.Password,
+		Group:    input.Group,
 	})
 
 	if err != nil {
@@ -123,5 +125,5 @@ func (h *Handler) getProfile(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "user id not found in context"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "ok", "user_id": userId})
+	c.JSON(http.StatusOK, gin.H{"message": "this is a protected route", "user_id": userId})
 }

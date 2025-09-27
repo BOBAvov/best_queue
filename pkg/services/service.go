@@ -2,7 +2,6 @@ package services
 
 import (
 	"crypto/rand"
-	"errors"
 	"sso/pkg/repository"
 	"time"
 
@@ -31,11 +30,11 @@ type Authorization interface {
 // Сервис авторизации
 type AuthService struct {
 	salt string
-	repo repository.Authorization
+	repo repository.Repository
 }
 
 // Конструктор сервиса авторизации
-func NewAuthService(repo repository.Authorization) *AuthService {
+func NewAuthService(repo repository.Repository) *AuthService {
 	return &AuthService{
 		repo: repo,
 		salt: generateSalt(),
@@ -44,57 +43,17 @@ func NewAuthService(repo repository.Authorization) *AuthService {
 
 // Создание пользователя с хешированием пароля
 func (s *AuthService) CreateUser(user repository.User) (int, error) {
+	id_group, err := s.repo.GetIdGroupByName(user.Group)
+	if err != nil {
+		return 0, err
+	}
 	hashedPassword, err := s.generatePasswordHash(user.Password)
 	if err != nil {
 		return 0, err
 	}
 	user.Password = hashedPassword
+	user.GroupID = id_group
 	return s.repo.CreateUser(user)
-}
-
-// Генерация JWT токена для пользователя
-func (s *AuthService) GenerateToken(username, password string) (string, error) {
-	user, err := s.repo.GetUserByUsername(username)
-	if err != nil {
-		return "", err
-	}
-
-	// Проверка пароля
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password+s.salt)); err != nil {
-		return "", err
-	}
-
-	// Создание токена с user_id
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-		UserId: user.Id,
-	})
-
-	// Возвращаем строку токена
-	return token.SignedString([]byte(jwtSecret))
-}
-
-// Проверка и парсинг JWT токена, возвращает user_id
-func (s *AuthService) ParseToken(tokenStr string) (int, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
-		}
-		return []byte(jwtSecret), nil
-	})
-	if err != nil {
-		return 0, err
-	}
-
-	claims, ok := token.Claims.(*tokenClaims)
-	if !ok || !token.Valid {
-		return 0, errors.New("token is invalid")
-	}
-
-	return claims.UserId, nil
 }
 
 func generateSalt() string {
@@ -110,4 +69,8 @@ func generateSalt() string {
 func (s *AuthService) generatePasswordHash(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password+s.salt), bcrypt.DefaultCost)
 	return string(bytes), err
+}
+
+func (s *AuthService) GetIdGroupByName(groupName string) (int, error) {
+	return s.repo.GetIdGroupByName(groupName)
 }

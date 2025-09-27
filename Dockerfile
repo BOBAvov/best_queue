@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Собираем бинарник
-RUN go build -o http_sso ./cmd/main.go
+RUN go build -o sso ./cmd/main.go
 
 # Финальный минимальный образ
 FROM alpine:latest
@@ -19,10 +19,10 @@ FROM alpine:latest
 WORKDIR /app
 
 # Копируем бинарник из стадии сборки
-COPY --from=builder /app/http_sso .
+COPY --from=builder /app/sso .
 
 # Открываем порт
 EXPOSE 8080
 
 # Запускаем приложение
-CMD ["./http_sso"]
+CMD ["./sso"]
