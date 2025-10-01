@@ -1,0 +1,1 @@
+INSERT INTO public."Faculties" (id,code,name,comments) VALUES (DEFAULT,'ИБМ','Инженерный бизнес и менеджмент', null)

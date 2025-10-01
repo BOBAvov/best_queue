@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	config "sso/configs"
+	"sso/pkg/config"
 	"sso/pkg/handler"
 	"sso/pkg/repository"
 	"sso/pkg/services"

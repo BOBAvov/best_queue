@@ -1,10 +1,9 @@
 package config
 
 import (
+	"github.com/spf13/viper"
 	"log"
 	"sso/models"
-
-	"github.com/spf13/viper"
 )
 
 func LoadConfig() models.Config {

@@ -2,31 +2,31 @@ package services
 
 import (
 	"errors"
+	"sso/models"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Генерация JWT токена для пользователя
-func (s *AuthService) GenerateToken(username, password string) (string, error) {
+type tokenClaims struct {
+	jwt.RegisteredClaims
+	UserId  int  `json:"user_id"`
+	Isadmin bool `json:"is_admin"`
+}
+
+// Проверка пароля
+func (s *AuthService) VerificationPassword(username, password string) (string, error) {
 	user, err := s.repo.GetUserByTgName(username)
 	if err != nil {
 		return "", err
 	}
 	// Проверка пароля
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password+s.salt)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return "", errors.New("invalid password")
 	}
 	// Создание токена
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-		UserId: int(user.Id),
-	})
-	return token.SignedString([]byte(jwtSecret))
+	return NewToken(user)
 }
 
 // Проверка и парсинг JWT токена, возвращает user_id
@@ -47,4 +47,22 @@ func (s *AuthService) ParseToken(tokenStr string) (int, error) {
 	}
 
 	return int(claims.UserId), nil
+}
+
+func NewToken(user models.User) (string, error) {
+	// Заполняем типизированные claims, чтобы совпадало с ParseToken
+	claims := &tokenClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
+		},
+		UserId:  int(user.ID),
+		Isadmin: user.IsAdmin,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }
