@@ -3,6 +3,5 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/migrations/000001_create_initial_tables.down.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/migrations/000001_create_initial_tables.up.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/migrations/scrip.sql" dialect="PostgreSQL" />
   </component>
 </project>

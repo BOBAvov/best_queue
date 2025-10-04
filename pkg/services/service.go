@@ -18,8 +18,8 @@ const (
 // Интерфейс авторизации
 type Authorization interface {
 	CreateUser(user models.RegisterUser) (int, error)
-	//GenerateToken(username, password string) (string, error)
-	ParseToken(tokenStr string) (int, error)
+	NewToken(user models.AuthUser) (string, error)
+	ParseToken(tokenStr string) (int, bool, error)
 	CreateGroup(user string) (int, error)
 }
 
@@ -34,18 +34,6 @@ func NewAuthService(repo repository.Repository) *AuthService {
 		repo: repo,
 	}
 }
-
-// Создание пользователя с хешированием пароля
-func (s *AuthService) CreateUser(user models.RegisterUser) (int, error) {
-	hashedPassword, err := s.generatePasswordHash(user.Password)
-	if err != nil {
-		return 0, err
-	}
-	user.Password = hashedPassword
-	return s.repo.CreateUser(user)
-}
-
-//
 
 // Хеширование пароля с солью
 func (s *AuthService) generatePasswordHash(password string) (string, error) {

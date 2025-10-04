@@ -23,7 +23,7 @@ type Faculty struct {
 	ID       int64          `db:"id" json:"id"`
 	Code     string         `db:"code" json:"code" binding:"required"`
 	Name     string         `db:"name" json:"name" binding:"required"`
-	Comments sql.NullString `db:"comments" json:"comments"` // Nullable
+	Comments sql.NullString `db:"comments" json:"comments"`
 }
 
 // Department соответствует таблице "Departments"
@@ -32,7 +32,7 @@ type Department struct {
 	Code      string         `db:"code" json:"code"`
 	Name      string         `db:"name" json:"name"`
 	FacultyID int64          `db:"faculty_id" json:"faculty_id"`
-	Comment   sql.NullString `db:"comment" json:"comment"` // Nullable
+	Comment   sql.NullString `db:"comment" json:"comment"`
 }
 
 // Group соответствует таблице "Groups"
@@ -41,7 +41,7 @@ type Group struct {
 	Code         string         `db:"code" json:"code" binding:"required"`
 	Name         string         `db:"name" json:"name" binding:"required"`
 	DepartmentID int64          `db:"department_id" json:"department_id"`
-	Comment      sql.NullString `db:"comment" json:"comment"` // Nullable
+	Comment      sql.NullString `db:"comment" json:"comment"`
 }
 
 type RegisterUser struct {
@@ -57,7 +57,7 @@ type User struct {
 	Username     string `db:"username" json:"username"`
 	TgNick       string `db:"tg_nick" json:"tg_nick"`
 	GroupID      int64  `db:"group_id" json:"group_id"`
-	PasswordHash string `db:"password_hash" json:"-"` // Хэша не должно быть в ответе
+	PasswordHash string `db:"password_hash" json:"-"`
 	IsAdmin      bool   `db:"is_admin" json:"is_admin"`
 }
 
@@ -78,5 +78,10 @@ type Queue struct {
 type GroupInQueue struct {
 	ID      int64 `db:"id" json:"id"`
 	QueueID int64 `db:"queue_id" json:"queue_id"`
-	GroupID int64 `db:"groupe_id" json:"group_id"` // Обратите внимание на опечатку в вашей схеме (groupe_id)
+	GroupID int64 `db:"group_id" json:"group_id"`
+}
+
+type AuthUser struct {
+	TgNick   string `json:"tg_nick" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }

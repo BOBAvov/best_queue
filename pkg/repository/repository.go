@@ -17,10 +17,18 @@ const (
 )
 
 type Repository interface {
-	CreateUser(user models.RegisterUser) (int, error)
+	// User
+	CreateUser(user models.RegisterUser, idGroup int) (int, error)
 	GetUserByID(id int) (models.User, error)
 	GetUserByTgName(tgName string) (models.User, error)
+	GetUserIsAdmin(id int) (bool, error)
+	GetUserIdByTgNick(tgNick string) (id int, err error)
+	// Group
 	CreateGroup(name string) (int, error)
+	GetGroupIdByCode(code string) (id int, err error)
+	// Faculcy
+	CreateFaculty(faculty models.Faculty) (int, error)
+	GetFacultyByCode(code string) (models.Faculty, error)
 }
 
 func NewRepository(db *sqlx.DB) *PostgresRepository {

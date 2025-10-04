@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
     "tg_nick" varchar(255) NOT NULL UNIQUE,
     "group_id" integer NOT NULL,
     "password_hash" varchar(255) NOT NULL,
-    "is_admin" boolean NOT NULL
+    "is_admin" boolean NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS available (

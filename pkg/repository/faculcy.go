@@ -14,3 +14,13 @@ func (h *PostgresRepository) CreateFaculty(faculty models.Faculty) (int, error) 
 	}
 	return id, nil
 }
+
+func (h *PostgresRepository) GetFacultyByCode(code string) (models.Faculty, error) {
+	var faculty models.Faculty
+	query := fmt.Sprintf("SELECT id FROM %s WHERE code=$1", FacultyTable)
+	err := h.db.Get(&faculty, query, code)
+	if err != nil {
+		return faculty, err
+	}
+	return faculty, nil
+}

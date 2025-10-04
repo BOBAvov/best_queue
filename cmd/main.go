@@ -15,6 +15,7 @@ import (
 )
 
 func main() {
+	// TODO: логер добавить
 	// Load configuration
 	cfg := config.LoadConfig()
 	fmt.Printf("Config: %+v\n", cfg)
