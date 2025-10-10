@@ -1,3 +1,4 @@
+// Package services содержит методы для работы с пользователями
 package services
 
 import (
@@ -5,9 +6,11 @@ import (
 	"sso/models"
 )
 
-// Создание пользователя с хешированием пароля
+// CreateUser создает нового пользователя с хешированием пароля
 func (s *AuthService) CreateUser(user models.RegisterUser) (int, error) {
 	const op = "CreateUser"
+
+	// Хешируем пароль перед сохранением в базу данных
 	hashedPassword, err := s.generatePasswordHash(user.Password)
 	if err != nil {
 		log.Printf("%s: %v", op, err)
@@ -15,12 +18,13 @@ func (s *AuthService) CreateUser(user models.RegisterUser) (int, error) {
 	}
 	user.Password = hashedPassword
 
-	var idGroup int
-	idGroup, err = s.repo.GetGroupIdByCode(user.Group)
+	// Получаем группу по коду
+	group, err := s.repo.GetGroupByCode(user.Group)
 	if err != nil {
 		log.Printf("%s: %v", op, err)
 		return 0, err
 	}
 
-	return s.repo.CreateUser(user, idGroup)
+	// Создаем пользователя в базе данных
+	return s.repo.CreateUser(user, group.ID)
 }

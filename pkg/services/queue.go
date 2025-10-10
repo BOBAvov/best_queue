@@ -2,20 +2,14 @@ package services
 
 import (
 	"sso/models"
-	"time"
 )
 
 func (s *AuthService) CreateQueue(queue models.Queue) (int, error) {
-	queue.TimeStart = time.Now()
-	if queue.TimeAdd == 0 {
-		queue.TimeAdd = 5 // по умолчанию 5 часов
-	}
-	queue.TimeEnd = time.Now().Add(time.Hour * time.Duration(queue.TimeAdd))
 	return s.repo.CreateQueue(queue)
 }
 
-func (s *AuthService) GetQueueById(id string) (models.Queue, error) {
-	return s.repo.GetQueueById(id)
+func (s *AuthService) GetQueueByID(id int) (models.Queue, error) {
+	return s.repo.GetQueueByID(id)
 }
 
 func (s *AuthService) GetAllQueues() ([]models.Queue, error) {
@@ -26,7 +20,7 @@ func (s *AuthService) UpdateQueue(queue models.Queue) error {
 	return s.repo.UpdateQueue(queue)
 }
 
-func (s *AuthService) DeleteQueue(id string) error {
+func (s *AuthService) DeleteQueue(id int) error {
 	return s.repo.DeleteQueue(id)
 }
 
@@ -62,8 +56,4 @@ func (s *AuthService) UpdateUser(id int, user models.User) error {
 
 func (s *AuthService) DeleteUser(id int) error {
 	return s.repo.DeleteUser(id)
-}
-
-func (s *AuthService) GetGroupIdByCode(code string) (int, error) {
-	return s.repo.GetGroupIdByCode(code)
 }

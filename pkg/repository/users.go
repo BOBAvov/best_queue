@@ -5,10 +5,10 @@ import (
 	"sso/models"
 )
 
-func (r *PostgresRepository) CreateUser(user models.RegisterUser, idGroup int) (int, error) {
+func (r *PostgresRepository) CreateUser(user models.RegisterUser, groupID int) (int, error) {
 	var id int
-	query := fmt.Sprintf("INSERT INTO %s (username, tg_nick, group_id,password_hash) VALUES ($1, $2, $3,$4 ) RETURNING id", UserTable)
-	err := r.db.QueryRow(query, user.Username, user.TgNick, idGroup, user.Password).Scan(&id)
+	query := fmt.Sprintf("INSERT INTO %s (username, tg_nick, group_id, password_hash) VALUES ($1, $2, $3, $4) RETURNING id", UserTable)
+	err := r.db.QueryRow(query, user.Username, user.TgNick, groupID, user.Password).Scan(&id)
 	return id, err
 }
 

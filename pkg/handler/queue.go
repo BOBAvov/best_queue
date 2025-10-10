@@ -1,7 +1,7 @@
+// Package handler содержит HTTP обработчики для работы с очередями
 package handler
 
 import (
-	"database/sql"
 	"net/http"
 	"sso/models"
 	"strconv"
@@ -23,18 +23,10 @@ func (h *Handler) createQueue(c *gin.Context) {
 		return
 	}
 
-	// Получаем ID группы по имени
-	groupID, err := h.service.GetGroupIdByCode(input.GroupCode)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "group not found"})
-		return
-	}
-
 	queue := models.Queue{
-		Title:       input.Title,
-		GroupID:     groupID,
-		AvailableID: 1,
-		TimeAdd:     input.TimeAdd,
+		Title:     input.Title,
+		TimeStart: input.TimeStart,
+		TimeEnd:   input.TimeEnd,
 	}
 
 	id, err := h.service.CreateQueue(queue)
@@ -48,13 +40,14 @@ func (h *Handler) createQueue(c *gin.Context) {
 
 // getQueue возвращает очередь по ID
 func (h *Handler) getQueue(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id parameter is required"})
+	idStr := c.Param("id")
+	queueID, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid queue id"})
 		return
 	}
 
-	queue, err := h.service.GetQueueById(id)
+	queue, err := h.service.GetQueueByID(queueID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "queue not found"})
 		return
@@ -112,13 +105,14 @@ func (h *Handler) deleteQueue(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id parameter is required"})
+	idStr := c.Param("id")
+	queueID, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid queue id"})
 		return
 	}
 
-	err := h.service.DeleteQueue(id)
+	err = h.service.DeleteQueue(queueID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
