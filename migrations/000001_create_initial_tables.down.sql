@@ -1,15 +1,8 @@
-ALTER TABLE "Groups_in_queue" DROP CONSTRAINT IF EXISTS "Groups_in_queue_fk2";
-ALTER TABLE "Groups_in_queue" DROP CONSTRAINT IF EXISTS "Groups_in_queue_fk1";
-ALTER TABLE "Queues" DROP CONSTRAINT IF EXISTS "Queues_fk3";
-ALTER TABLE "Queues" DROP CONSTRAINT IF EXISTS "Queues_fk2";
-ALTER TABLE "Groups" DROP CONSTRAINT IF EXISTS "Groups_fk3";
-ALTER TABLE "Departments" DROP CONSTRAINT IF EXISTS "Departments_fk3";
-ALTER TABLE "Users" DROP CONSTRAINT IF EXISTS "Users_fk4";
+ALTER TABLE queue_participants DROP CONSTRAINT IF EXISTS "Queue_participants_user_fk";
+ALTER TABLE queue_participants DROP CONSTRAINT IF EXISTS "Queue_participants_queue_fk";
+ALTER TABLE users DROP CONSTRAINT IF EXISTS "Users_in_Groups_fk";
 
-DROP TABLE IF EXISTS "Groups_in_queue";
-DROP TABLE IF EXISTS "Queues";
-DROP TABLE IF EXISTS "Available";
-DROP TABLE IF EXISTS "Users";
-DROP TABLE IF EXISTS "Groups";
-DROP TABLE IF EXISTS "Departments";
-DROP TABLE IF EXISTS "Faculties";
+DROP TABLE IF EXISTS queue_participants;
+DROP TABLE IF EXISTS queues;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS groups;

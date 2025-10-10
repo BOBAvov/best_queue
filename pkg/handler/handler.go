@@ -25,8 +25,7 @@ func NewHandler(authService services.Authorization) *Handler {
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
-	router := gin.New()
-
+	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "API is running"})
 	})
@@ -39,19 +38,44 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	api := router.Group("/api", h.userIdentity)
 	{
-		api.GET("/profile", h.getProfile)
-		queues := api.Group("/queues")
+		// User routes
+		api.GET("/admin", h.isAdmin)
+		api.GET("/profile", h.getUserProfile)
+		api.PUT("/profile", h.updateUser)
+
+		// Admin only routes
+		admin := api.Group("/admin")
 		{
-			queues.GET("/")
-			queues.POST("/")
-			queues.DELETE("/:id")
-			queues.PUT("/:id")
-			queues.GET("/:id")
+			admin.GET("/users", h.getUsers)
+			admin.DELETE("/users/:id", h.deleteUser)
 		}
 
+		// Queue routes
+		queues := api.Group("/queues")
+		{
+			queues.GET("/", h.getAllQueues)
+			queues.POST("/", h.createQueue) // Admin only
+			queues.GET("/:id", h.getQueue)
+			queues.PUT("/:id", h.updateQueue)    // Admin only
+			queues.DELETE("/:id", h.deleteQueue) // Admin only
+			queues.POST("/:id/join", h.joinQueue)
+			queues.DELETE("/:id/leave", h.leaveQueue)
+			queues.GET("/:id/participants", h.getQueueParticipants)
+			queues.POST("/:id/shift", h.shiftQueue) // Admin only
+		}
 	}
 
 	return router
+}
+func (h *Handler) isAdmin(c *gin.Context) {
+	isAdmin, ok := c.Get(userIsAdmin)
+	if !ok || !isAdmin.(bool) {
+		c.Set(userIsAdmin, false)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
+		return
+	}
+	isAdmin = isAdmin.(bool)
+	c.AbortWithStatusJSON(http.StatusOK, gin.H{"admin": isAdmin})
 }
 
 func (h *Handler) signUp(c *gin.Context) {
@@ -61,7 +85,7 @@ func (h *Handler) signUp(c *gin.Context) {
 		return
 	}
 	if input.Username == "" || input.Password == "" || input.TgNick == "" || input.Group == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "<UNK>"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "all fields are required"})
 		return
 	}
 
@@ -120,14 +144,4 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	c.Set(userCtx, userId)
 	c.Set(userIsAdmin, isAdmin)
 	c.Next()
-}
-
-func (h *Handler) getProfile(c *gin.Context) {
-	// Получаем ID пользователя из контекста, который был установлен в middleware
-	userId, ok := c.Get(userCtx)
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "user id not found in context"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "this is a protected route", "user_id": userId})
 }
